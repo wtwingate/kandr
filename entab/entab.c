@@ -2,9 +2,9 @@
 
 #define TABSTOP 8
 #define MAXLINE 1000
+#define nexttab(COL) (COL) + (TABSTOP - ((COL) % TABSTOP))
 
 void entab(char dest[], char src[]);
-int nexttab(int current);
 int readline(char s[], int max);
 
 int main(void)
@@ -25,37 +25,38 @@ int main(void)
 void entab(char dest[], char src[])
 {
 	char c;
-	int i, j;
-	int current, target, next;
+	int i = 0;
+	int j = 0;
+	int current = 0;
+	int target = 0;
+	int next = 0;
 
-	i = j = 0;
 	while ((c = src[i++]) != '\0') {
+		current++;
 		if (c == ' ') {
-			current = i - 1;
+			target = current + 1;
 			while ((c = src[i++]) == ' ')
-				;
-			target = i - 1;
+				target++;
+
+			while ((next = nexttab(current)) < target) {
+				dest[j++] = '\t';
+				current = next + 1;
+			}
 
 			while (current < target) {
-				while ((next = nexttab(current)) < target) {
-					dest[j++] = '\t';
-					current = next;
-				}
 				dest[j++] = ' ';
 				current++;
 			}
+			dest[j++] = c;
+		} else if (c == '\t') {
+			dest[j++] = c;
+			current = nexttab(current);
+		} else {
+			dest[j++] = c;
 		}
-
-		dest[j++] = c;
 	}
 
 	dest[j] = '\0';
-}
-
-/* calculate column number of next tabstop at or after current column */
-int nexttab(int current)
-{
-	return current + (TABSTOP - (current % TABSTOP));
 }
 
 /* read line from stdin into s and return len; len must be less than max */
